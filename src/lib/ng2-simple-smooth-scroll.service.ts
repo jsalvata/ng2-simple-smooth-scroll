@@ -64,31 +64,23 @@ export class SimpleSmoothScrollService {
       const duration = option.duration;
       const doc = document.documentElement;
       const begin = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
-      const t = 10;
       const tick = 1 / (duration / t);
       height += option.offset;
       const distance = height - begin;
       if (distance == 0) return;
-      let time = 0;
-      let y, current;
-      let s = setInterval(function () {
-        y = option.easing(time);
-        current = y * distance + begin;
+      let t0 = new Date().getTime();
+      let frame= function () {
+        let y = option.easing(new Date().getTime() - t0);
+        let current = y * distance + begin;
         if (current >= height && distance > 0) {
-          current = height;
-          clearInterval(s);
-        }
-        if (current < height + tick && distance < 0) {
-          current = height;
-          clearInterval(s);
-        }
-        if (current < 0 && distance < 0) {
-          current = 0;
-          clearInterval(s);
-        }
-        window.scrollTo(0, current);
-        time += tick;
-      }, t);
+          window.scrollTo(0, height);
+        } else if (current < 0 && distance < 0) {
+          window.scrollTo(0, 0);
+        } else {
+          window.scrollTo(0, current);
+          setTimeout(frame, 25);
+      };
+      setTimeout(frame, 25);
     }
   }
 
